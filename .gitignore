@@ -1,0 +1,80 @@
+# =========================
+# Dependencies (Node)
+# =========================
+node_modules/
+
+# =========================
+# Environment & secrets
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Logs / runtime
+# =========================
+*.log
+*.pid
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+__MACOSX/
+
+# =========================
+# Build / cache
+# =========================
+dist/
+build/
+.cache/
+coverage/
+*.tsbuildinfo
+
+# =========================
+# Python
+# =========================
+venv/
+.venv/
+env/
+**/venv/
+.aienv/
+.aienv311/
+.pdfenv/
+
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+htmlcov/
+
+*.egg-info/
+.eggs/
+
+# =========================
+# Editor / IDE
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Local AI/editor tooling
+# =========================
+.agents/
+skills-lock.json
+.cursor/
+.claude/
+.kiro/
+.cursorrules
+.windsurfrules
+.mcp.json
+.opencode.json
+
+# =========================
+# Misc
+# =========================
+.code-review-graph/
+tmp/
+temp/.aienv311
+.aienv311
+.venv

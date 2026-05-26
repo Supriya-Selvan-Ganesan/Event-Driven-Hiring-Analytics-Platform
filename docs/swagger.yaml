@@ -1,0 +1,887 @@
+openapi: 3.0.0
+info:
+  title: LinkedIn AgenticAI API
+  version: 1.0.0
+  description: |
+    Complete distributed system backend API documentation for Data 236 Project.
+
+    **Agentic AI (FastAPI):** Paths under `/ai/*` are proxied to the AI Uvicorn service (default **8001**; set env `AI_SERVICE_PORT` on the gateway to match your AI port, e.g. **8772**).
+    Use this gateway (`/api` prefix) for **Try it out** — e.g. `POST /api/ai/tasks/submit` → `http://127.0.0.1:{AI_SERVICE_PORT}/ai/tasks/submit`.
+    **WebSocket:** `ws://localhost:4000/api/ai/ws/ai/tasks/{task_id}` (proxied to FastAPI `/ws/ai/tasks/{task_id}`). OpenAPI does not model WebSockets; use a WS client or FastAPI `/docs` on the AI port.
+    Canonical interactive docs for the Python service alone: `http://127.0.0.1:{AI_SERVICE_PORT}/docs`.
+servers:
+  - url: http://localhost:4000/api
+    description: Local API Gateway
+
+paths:
+  # Member Service
+  /members/create:
+    post:
+      tags: [Profile Service]
+      summary: Create a new member profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                name:
+                  type: string
+                title:
+                  type: string
+                headline:
+                  type: string
+                location:
+                  type: string
+                skills:
+                  type: array
+                  items:
+                    type: string
+                resume_text:
+                  type: string
+                about:
+                  type: string
+            example:
+              email: cand_demo@test.com
+              name: Demo Candidate
+              title: Software Engineer
+              location: San Jose
+              skills: [python, kafka, fastapi]
+              resume_text: Engineer with 5 years Python, Kafka, and FastAPI.
+      responses:
+        '201':
+          description: Created
+  /members/get:
+    post:
+      tags: [Profile Service]
+      summary: Retrieve a member profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [member_id]
+              properties:
+                member_id:
+                  type: string
+            example:
+              member_id: M-101
+      responses:
+        '200':
+          description: OK
+  /members/update:
+    post:
+      tags: [Profile Service]
+      summary: Update member fields
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [member_id]
+              properties:
+                member_id:
+                  type: string
+                name:
+                  type: string
+                title:
+                  type: string
+                location:
+                  type: string
+                skills:
+                  type: array
+                  items:
+                    type: string
+                resume_text:
+                  type: string
+            example:
+              member_id: M-101
+              resume_text: Updated resume text for testing.
+      responses:
+        '200':
+          description: OK
+  /members/delete:
+    post:
+      tags: [Profile Service]
+      summary: Soft-delete member profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [member_id]
+              properties:
+                member_id:
+                  type: string
+            example:
+              member_id: M-101
+      responses:
+        '200':
+          description: OK
+  /members/search:
+    post:
+      tags: [Profile Service]
+      summary: Full-text search across members
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                keyword:
+                  type: string
+                location:
+                  type: string
+                skill:
+                  type: string
+            example: {}
+      responses:
+        '200':
+          description: OK
+
+  # Job Service
+  /jobs/create:
+    post:
+      tags: [Job Service]
+      summary: Create a new job posting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                company:
+                  type: string
+                company_id:
+                  type: string
+                location:
+                  type: string
+                salary:
+                  type: string
+                type:
+                  type: string
+                employment_type:
+                  type: string
+                description:
+                  type: string
+                skills:
+                  type: array
+                  items:
+                    type: string
+                recruiter_id:
+                  type: string
+                industry:
+                  type: string
+                seniority_level:
+                  type: string
+                remote_mode:
+                  type: string
+            example:
+              title: Platform Engineer
+              company: LinkedIn Sim
+              location: San Jose
+              type: full-time
+              employment_type: full-time
+              seniority_level: mid
+              skills: [python, kafka, fastapi, redis]
+              description: Build scalable backend services.
+              recruiter_id: R-5001
+      responses:
+        '201':
+          description: Created
+  /jobs/get:
+    post:
+      tags: [Job Service]
+      summary: Get job details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [job_id]
+              properties:
+                job_id:
+                  type: string
+                member_id:
+                  type: string
+                  description: Optional viewer for applied/saved flags
+            example:
+              job_id: J-LIVE-1
+      responses:
+        '200':
+          description: OK
+  /jobs/update:
+    post:
+      tags: [Job Service]
+      summary: Update job fields
+      responses:
+        '200':
+          description: OK
+  /jobs/search:
+    post:
+      tags: [Job Service]
+      summary: Search and filter jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                keyword:
+                  type: string
+                location:
+                  type: string
+                type:
+                  type: string
+                industry:
+                  type: string
+                remote:
+                  type: string
+                company:
+                  type: string
+            example: {}
+      responses:
+        '200':
+          description: OK
+  /jobs/close:
+    post:
+      tags: [Job Service]
+      summary: Close a job posting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [job_id]
+              properties:
+                job_id:
+                  type: string
+                recruiter_id:
+                  type: string
+                  description: When set, must match the job's recruiter_id or the request returns 403.
+            example:
+              job_id: J-abc12345
+              recruiter_id: M-123
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: recruiter_id does not match job owner
+        '404':
+          description: Job not found
+  /jobs/byRecruiter:
+    post:
+      tags: [Job Service]
+      summary: List all jobs by specific recruiter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [recruiter_id]
+              properties:
+                recruiter_id:
+                  type: string
+            example:
+              recruiter_id: R-5001
+      responses:
+        '200':
+          description: OK
+  /jobs/save:
+    post:
+      tags: [Job Service]
+      summary: Save a job for a member
+      responses:
+        '200':
+          description: OK
+
+  # Application Service
+  /applications/submit:
+    post:
+      tags: [Application Service]
+      summary: Submit a job application
+      responses:
+        '201':
+          description: Created
+  /applications/get:
+    post:
+      tags: [Application Service]
+      summary: Get application details
+      responses:
+        '200':
+          description: OK
+  /applications/byJob:
+    post:
+      tags: [Application Service]
+      summary: List all applications for a job
+      responses:
+        '200':
+          description: OK
+  /applications/byMember:
+    post:
+      tags: [Application Service]
+      summary: List all applications by a member
+      responses:
+        '200':
+          description: OK
+  /applications/updateStatus:
+    post:
+      tags: [Application Service]
+      summary: Update application status through funnel
+      responses:
+        '200':
+          description: OK
+  /applications/addNote:
+    post:
+      tags: [Application Service]
+      summary: Add recruiter note to application
+      responses:
+        '200':
+          description: OK
+
+  # Messaging Service
+  /threads/open:
+    post:
+      tags: [Messaging Service]
+      summary: Create a message thread
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [participant_a, participant_b]
+              properties:
+                participant_a:
+                  type: string
+                participant_b:
+                  type: string
+            example:
+              participant_a: M-ADMIN01
+              participant_b: M-28ac45b2
+      responses:
+        '201':
+          description: Created
+  /threads/get:
+    post:
+      tags: [Messaging Service]
+      summary: Get thread metadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [thread_id]
+              properties:
+                thread_id:
+                  type: string
+            example:
+              thread_id: T-12345678
+      responses:
+        '200':
+          description: OK
+  /threads/byUser:
+    post:
+      tags: [Messaging Service]
+      summary: List all threads for a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id]
+              properties:
+                user_id:
+                  type: string
+            example:
+              user_id: M-ADMIN01
+      responses:
+        '200':
+          description: OK
+  /messages/send:
+    post:
+      tags: [Messaging Service]
+      summary: Send a message in thread
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [thread_id, sender_id, text]
+              properties:
+                thread_id:
+                  type: string
+                sender_id:
+                  type: string
+                text:
+                  type: string
+            example:
+              thread_id: T-12345678
+              sender_id: M-ADMIN01
+              text: Hello Maya, this is a test message.
+      responses:
+        '201':
+          description: Created
+  /messages/list:
+    post:
+      tags: [Messaging Service]
+      summary: List messages in thread
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [thread_id]
+              properties:
+                thread_id:
+                  type: string
+                limit:
+                  type: integer
+            example:
+              thread_id: T-12345678
+              limit: 50
+      responses:
+        '200':
+          description: OK
+
+  # Connections Service
+  /connections/request:
+    post:
+      tags: [Connection Service]
+      summary: Send connection request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [requester_id, receiver_id]
+              properties:
+                requester_id:
+                  type: string
+                receiver_id:
+                  type: string
+            example:
+              requester_id: M-ADMIN01
+              receiver_id: M-28ac45b2
+      responses:
+        '201':
+          description: Created
+  /connections/accept:
+    post:
+      tags: [Connection Service]
+      summary: Accept request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [request_id]
+              properties:
+                request_id:
+                  type: string
+            example:
+              request_id: CR-12345678
+      responses:
+        '200':
+          description: OK
+  /connections/reject:
+    post:
+      tags: [Connection Service]
+      summary: Reject request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [request_id]
+              properties:
+                request_id:
+                  type: string
+            example:
+              request_id: CR-12345678
+      responses:
+        '200':
+          description: OK
+  /connections/list:
+    post:
+      tags: [Connection Service]
+      summary: List all user connections
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id]
+              properties:
+                user_id:
+                  type: string
+            example:
+              user_id: M-ADMIN01
+      responses:
+        '200':
+          description: OK
+  /connections/requestsByUser:
+    post:
+      tags: [Connection Service]
+      summary: List incoming and sent connection requests by user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id]
+              properties:
+                user_id:
+                  type: string
+            example:
+              user_id: M-ADMIN01
+      responses:
+        '200':
+          description: OK
+
+  # Analytics Service
+  /events/ingest:
+    post:
+      tags: [Analytics Service]
+      summary: Ingest behavioral event
+      responses:
+        '202':
+          description: Accepted
+  /analytics/jobs/top:
+    post:
+      tags: [Analytics Service]
+      summary: Top jobs by metric
+      responses:
+        '200':
+          description: OK
+  /analytics/funnel:
+    post:
+      tags: [Analytics Service]
+      summary: Application funnel
+      responses:
+        '200':
+          description: OK
+  /analytics/geo:
+    post:
+      tags: [Analytics Service]
+      summary: Geographic distribution
+      responses:
+        '200':
+          description: OK
+  /analytics/member/dashboard:
+    post:
+      tags: [Analytics Service]
+      summary: Member dashboard metrics
+      responses:
+        '200':
+          description: OK
+
+  /applications/apply:
+    post:
+      tags: [Application Service]
+      summary: Submit application (alias of submit)
+      responses:
+        '201':
+          description: Created
+
+
+   
+  # Agentic AI Service (UPDATED)
+  /ai/tasks/submit:
+    post:
+      tags: [Agentic AI Service]
+      summary: Submit AI task asynchronously
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [task_type, job_id, actor_id]
+              properties:
+                task_type:
+                  type: string
+                  enum: [candidate_shortlist, generate_outreach]
+                job_id:
+                  type: string
+                candidate_ids:
+                  type: array
+                  items:
+                    type: string
+                actor_id:
+                  type: string
+                trace_id:
+                  type: string
+            example:
+              task_type: candidate_shortlist
+              job_id: J-LIVE-1
+              candidate_ids: [M-101, M-202]
+              actor_id: R-5001
+      responses:
+        '202':
+          description: Accepted
+
+  /ai/agent/shortlist:
+    post:
+      tags: [Agentic AI Service]
+      summary: Trigger shortlist workflow (alias of submit)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [job_id, actor_id]
+              properties:
+                job_id:
+                  type: string
+                candidate_ids:
+                  type: array
+                  items:
+                    type: string
+                actor_id:
+                  type: string
+            example:
+              job_id: J-LIVE-1
+              actor_id: R-5001
+      responses:
+        '202':
+          description: Accepted
+
+  /ai/tasks/{task_id}:
+    get:
+      tags: [Agentic AI Service]
+      summary: Get task status and results
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /ai/tasks/{task_id}/events:
+    get:
+      tags: [Agentic AI Service]
+      summary: Get task event stream
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 200
+      responses:
+        '200':
+          description: OK
+
+  /ai/tasks:
+    get:
+      tags: [Agentic AI Service]
+      summary: List AI tasks
+      parameters:
+        - name: actor_id
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /ai/tasks/{task_id}/approve:
+    post:
+      tags: [Agentic AI Service]
+      summary: Approve / edit / reject (main HITL endpoint)
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision, reviewer_id]
+              properties:
+                decision:
+                  type: string
+                  enum: [approve, edit, reject]
+                edited_text:
+                  type: string
+                edited_drafts:
+                  type: object
+                reviewer_id:
+                  type: string
+            example:
+              decision: approve
+              reviewer_id: R-5001
+      responses:
+        '200':
+          description: OK
+
+  /ai/agent/edit:
+    post:
+      tags: [Agentic AI Service]
+      summary: Edit AI-generated outreach draft (standalone)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [task_id, reviewer_id]
+              properties:
+                task_id:
+                  type: string
+                edited_text:
+                  type: string
+                edited_drafts:
+                  type: object
+                reviewer_id:
+                  type: string
+      responses:
+        '200':
+          description: OK
+
+  /ai/agent/reject:
+    post:
+      tags: [Agentic AI Service]
+      summary: Reject AI-generated output (standalone)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [task_id, reviewer_id]
+              properties:
+                task_id:
+                  type: string
+                reviewer_id:
+                  type: string
+      responses:
+        '200':
+          description: OK
+
+  /ai/resume/parse:
+    post:
+      tags: [Agentic AI Service]
+      summary: Parse resume
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                member_id:
+                  type: string
+                text:
+                  type: string
+      responses:
+        '200':
+          description: OK
+
+  /ai/match/score:
+    post:
+      tags: [Agentic AI Service]
+      summary: Compute match score
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [job_id, parsed_profile]
+      responses:
+        '200':
+          description: OK
+
+  /ai/shortlist:
+    post:
+      tags: [Agentic AI Service]
+      summary: Rank candidates
+      responses:
+        '200':
+          description: OK
+
+  /ai/outreach/draft:
+    post:
+      tags: [Agentic AI Service]
+      summary: Generate outreach draft
+      responses:
+        '200':
+          description: OK
+
+  /ai/career-coach/suggest:
+    post:
+      tags: [Agentic AI Service]
+      summary: Career coaching suggestions
+      responses:
+        '200':
+          description: OK
+
+  /ai/metrics:
+    get:
+      tags: [Agentic AI Service]
+      summary: Metrics alias
+      responses:
+        '200':
+          description: OK
+
+  /ai/metrics/summary:
+    get:
+      tags: [Agentic AI Service]
+      summary: Metrics summary
+      responses:
+        '200':
+          description: OK
+
+  /ai/metrics/matching-quality:
+    get:
+      tags: [Agentic AI Service]
+      summary: Matching quality metrics
+      responses:
+        '200':
+          description: OK
+
+  /ai/health:
+    get:
+      tags: [Agentic AI Service]
+      summary: Health check
+      responses:
+        '200':
+          description: OK

@@ -1,4 +1,4 @@
-# LinkedIn Simulation — DATA 236 Distributed Systems (SJSU)
+#   Event-Driven Hiring Analytics Platform 
 
 A distributed LinkedIn-style platform built with React, FastAPI, Kafka, MySQL, MongoDB, and Redis. Includes a fully agentic AI Hiring Assistant with multi-step pipeline, HITL approval workflow, and WebSocket real-time progress.
 
